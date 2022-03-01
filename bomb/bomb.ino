@@ -12,8 +12,10 @@ SSD1306Wire display(0x3c, SDA, SCL, GEOMETRY_128_32);
 
 void taskButtons();
 void taskBomb();
+void taskSerial();
 
 void setup() {
+  taskSerial();
   taskButtons();
   taskBomb();
 }
@@ -23,8 +25,44 @@ uint8_t evButtonsData = 0;
 
 
 void loop() {
+  taskSerial();
   taskButtons();
   taskBomb();
+}
+
+void taskSerial() {
+  enum class SerialStates {INIT, WAITING_COMMANDS};
+  static SerialStates serialState =  SerialStates::INIT;
+  switch (serialState) {
+    case SerialStates::INIT: {
+        Serial.begin(115200);
+        serialState = SerialStates::WAITING_COMMANDS;
+        break;
+      }
+    case SerialStates::WAITING_COMMANDS: {
+
+        if (Serial.available() > 0 ) {
+          int dataRx = Serial.read();
+          if (dataRx == 'u') {
+            evButtons = true;
+            evButtonsData = UP_BTN;
+          }
+          else if (dataRx == 'd') {
+            evButtons = true;
+            evButtonsData = DOWN_BTN;
+          }
+          else if (dataRx == 'a') {
+            evButtons = true;
+            evButtonsData = ARM_BTN;
+          }
+        }
+        break;
+      }
+
+    default:
+      break;
+  }
+
 }
 
 void taskButtons() {
@@ -32,6 +70,7 @@ void taskButtons() {
   static ButtonsStates buttonsState =  ButtonsStates::INIT;
   static uint32_t referenceTime;
   const uint32_t STABLETIMEOUT = 100;
+  static uint8_t lastButton = 0;
 
   switch (buttonsState) {
     case ButtonsStates::INIT: {
@@ -44,14 +83,16 @@ void taskButtons() {
 
     case ButtonsStates::WAITING_PRESS: {
         if (digitalRead(UP_BTN) == LOW) {
+          lastButton = UP_BTN;
           referenceTime = millis();
           buttonsState = ButtonsStates::WAITING_STABLE;
         }
+
         break;
       }
 
     case ButtonsStates::WAITING_STABLE: {
-        if (digitalRead(UP_BTN) == HIGH) {
+        if (digitalRead(lastButton) == HIGH) {
           buttonsState = ButtonsStates::WAITING_PRESS;
         }
         else if ( (millis() - referenceTime) >= STABLETIMEOUT) {
@@ -62,11 +103,11 @@ void taskButtons() {
       }
 
     case ButtonsStates::WAITING_RELEASE: {
-        if (digitalRead(UP_BTN) == HIGH) {
+        if (digitalRead(lastButton) == HIGH) {
 
           evButtons = true;
-          evButtonsData = UP_BTN;
-          
+          evButtonsData = lastButton;
+
           buttonsState = ButtonsStates::WAITING_PRESS;
         }
         break;
@@ -81,5 +122,44 @@ void taskButtons() {
 }
 
 void taskBomb() {
+  enum class BombStates {INIT, WAITING_CONFIG, COUNTING};
+  static BombStates bombState =  BombStates::INIT;
+
+  static uint8_t counter;
+
+  switch (bombState) {
+    case BombStates::INIT: {
+
+        pinMode(14, OUTPUT);
+        pinMode(BOMB_OUT, OUTPUT);
+        pinMode(LED_COUNT, OUTPUT);
+
+        digitalWrite(14, LOW);
+        digitalWrite(LED_COUNT, HIGH);
+        digitalWrite(BOMB_OUT, LOW);
+
+        display.init();
+        display.setContrast(255);
+        display.clear();
+        display.setTextAlignment(TEXT_ALIGN_LEFT);
+        display.setFont(ArialMT_Plain_16);
+
+        counter = 20;
+        display.clear();
+        display.drawString(10, 5, String(counter));
+        display.display();
+        bombState = BombStates::WAITING_CONFIG;
+        break;
+      }
+    case BombStates::WAITING_CONFIG: {
+        break;
+      }
+
+    case BombStates::COUNTING: {
+        break;
+      }
+    default:
+      break;
+  }
 
 }
