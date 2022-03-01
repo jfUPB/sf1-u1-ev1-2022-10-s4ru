@@ -127,6 +127,11 @@ void taskBomb() {
 
   static uint8_t counter;
 
+  static uint8_t clave[7];
+  static uint8_t claveContador;
+  static uint8_t passwor[] = {UP_BTN, UP_BTN, DOWN_BTN, DOWN_BTN, UP_BTN, DOWN_BTN, ARM_BTN};
+  
+
   switch (bombState) {
     case BombStates::INIT: {
 
@@ -152,10 +157,50 @@ void taskBomb() {
         break;
       }
     case BombStates::WAITING_CONFIG: {
+
+        if (evButtons == true) {
+          evButtons = false;
+
+          if (evButtonsData == UP_BTN) {
+            if (counter < 60) {
+              counter++;
+            }
+
+            display.clear();
+            display.drawString(10, 5, String(counter));
+            display.display();
+          }
+
+          // En la condición armado no olvidar preparar todas las variables para el siguiente estado.
+          // por ejemplo claveContador = 0;
+
+
+        }
+
         break;
       }
 
     case BombStates::COUNTING: {
+
+        if(evButtons == true){
+          evButtons = false;
+
+          clave[claveContador] = evButtonsData;
+          claveContador++;
+          if(claveContador == 7){
+            // Vas a ver si la clave es igual al secreto
+          }
+        }
+
+        // Si ya pasó un 1 segundo --> decremento el counter
+        // Cuando el contador llegue a cero --> BOOM!. Debo esperar un tiempo para que el usario pueda ver el mensaje
+        // y el LED de la bomba se vea activa y luego paso de nuevo a configurar. OJO Cómo deben estar las cosas inicializadas
+        // antes de entrar al estado de configuración?
+        // 
+
+        // Si ya pasó 500 ms --> cambio el estado del LED de conteo
+
+      
         break;
       }
     default:
