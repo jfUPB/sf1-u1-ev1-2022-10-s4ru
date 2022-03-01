@@ -87,7 +87,17 @@ void taskButtons() {
           referenceTime = millis();
           buttonsState = ButtonsStates::WAITING_STABLE;
         }
-
+        else if (digitalRead(DOWN_BTN) == LOW) {
+          lastButton = DOWN_BTN;
+          referenceTime = millis();
+          buttonsState = ButtonsStates::WAITING_STABLE;
+        }
+        else if (digitalRead(ARM_BTN) == LOW) {
+          lastButton = ARM_BTN;
+          referenceTime = millis();
+          buttonsState = ButtonsStates::WAITING_STABLE;
+        }
+        
         break;
       }
 
@@ -129,8 +139,8 @@ void taskBomb() {
 
   static uint8_t clave[7];
   static uint8_t claveContador;
-  static uint8_t passwor[] = {UP_BTN, UP_BTN, DOWN_BTN, DOWN_BTN, UP_BTN, DOWN_BTN, ARM_BTN};
-  
+  static uint8_t password[] = {UP_BTN, UP_BTN, DOWN_BTN, DOWN_BTN, UP_BTN, DOWN_BTN, ARM_BTN};
+
 
   switch (bombState) {
     case BombStates::INIT: {
@@ -171,6 +181,22 @@ void taskBomb() {
             display.display();
           }
 
+          if (evButtonsData == DOWN_BTN) {
+            if (counter > 10) {
+              counter--;
+            }
+
+            display.clear();
+            display.drawString(10, 5, String(counter));
+            display.display();
+          }
+
+
+
+
+
+
+
           // En la condición armado no olvidar preparar todas las variables para el siguiente estado.
           // por ejemplo claveContador = 0;
 
@@ -182,29 +208,41 @@ void taskBomb() {
 
     case BombStates::COUNTING: {
 
-        if(evButtons == true){
+        if (evButtons == true) {
           evButtons = false;
 
           clave[claveContador] = evButtonsData;
           claveContador++;
-          if(claveContador == 7){
-            // Vas a ver si la clave es igual al secreto
+          if (claveContador == 7) {
+            
           }
+                                
+            // Vas a ver si la clave es igual al secreto
+          
+        
+        if(counter = 0) {
+          digitalWrite(BOMB_OUT,HIGH);
+          
+            display.clear();
+            display.drawString(10, 5, "BOOOOM");
+            display.display();
+            
         }
 
         // Si ya pasó un 1 segundo --> decremento el counter
         // Cuando el contador llegue a cero --> BOOM!. Debo esperar un tiempo para que el usario pueda ver el mensaje
         // y el LED de la bomba se vea activa y luego paso de nuevo a configurar. OJO Cómo deben estar las cosas inicializadas
         // antes de entrar al estado de configuración?
-        // 
+        //
 
         // Si ya pasó 500 ms --> cambio el estado del LED de conteo
 
-      
+
         break;
       }
     default:
       break;
   }
 
+}
 }
