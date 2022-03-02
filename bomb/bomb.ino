@@ -71,7 +71,7 @@ void taskButtons() {
   static uint32_t referenceTime;
   const uint32_t STABLETIMEOUT = 100;
   static uint8_t lastButton = 0;
-
+  
   switch (buttonsState) {
     case ButtonsStates::INIT: {
         pinMode(UP_BTN, INPUT_PULLUP);
@@ -141,6 +141,8 @@ void taskBomb() {
   static uint8_t claveContador =0;
   static uint8_t password[7] = {UP_BTN, UP_BTN, DOWN_BTN, DOWN_BTN, UP_BTN, DOWN_BTN, ARM_BTN};
 
+  uint32_t currentMillis = millis();
+
 
   switch (bombState) {
     case BombStates::INIT: {
@@ -191,7 +193,9 @@ void taskBomb() {
             display.display();
           }
 
-  
+          if(evButtonsData == ARM_BTN) {
+            bombState = BombStates::COUNTING;           
+          }
 
 
 
@@ -209,7 +213,8 @@ void taskBomb() {
 
     case BombStates::COUNTING: {
 
-       
+ 
+
 
 
 
@@ -220,13 +225,13 @@ void taskBomb() {
           clave[claveContador] = evButtonsData;
           claveContador++;
           if (claveContador == 7) {
-            if(password[0] ==  clave[0]){
-              if(password[1] ==  clave[1]){
-                if(password[2] ==  clave[2]){
-                  if(password[3] ==  clave[3]){
-                    if(password[4] ==  clave[4]){
-                      if(password[5] ==  clave[5]){
-                        if(password[6] ==  clave[6]){
+            if(password[UP_BTN] ==  clave[UP_BTN]){
+              if(password[UP_BTN] ==  clave[UP_BTN]){
+                if(password[DOWN_BTN] ==  clave[DOWN_BTN]){
+                  if(password[DOWN_BTN] ==  clave[DOWN_BTN]){
+                    if(password[UP_BTN] ==  clave[UP_BTN]){
+                      if(password[DOWN_BTN] ==  clave[DOWN_BTN]){
+                        if(password[ARM_BTN] ==  clave[ARM_BTN]){
                            display.clear();
                            display.drawString(10, 5, "Bomba Desarmada");
                            display.display();
@@ -238,7 +243,7 @@ void taskBomb() {
                  }
                }
              }
-                 if(password[0] !=  clave[0]){
+                 if(password[UP_BTN] !=  clave[UP_BTN]){
                  display.clear();
                  display.drawString(10, 5, "!Error¡");
                  display.display();
@@ -246,7 +251,7 @@ void taskBomb() {
                  display.drawString(10, 5, String(counter));
                  display.display();
                  }
-                 if(password[1] !=  clave[1]){
+                 if(password[UP_BTN] !=  clave[UP_BTN]){
                  display.clear();
                  display.drawString(10, 5, "!Error¡");
                  display.display();
@@ -254,7 +259,7 @@ void taskBomb() {
                  display.drawString(10, 5, String(counter));
                  display.display();
                  }
-                 if(password[2] !=  clave[2]){
+                 if(password[DOWN_BTN] !=  clave[DOWN_BTN]){
                  display.clear();
                  display.drawString(10, 5, "!Error¡");
                  display.display();
@@ -262,7 +267,7 @@ void taskBomb() {
                  display.drawString(10, 5, String(counter));
                  display.display();
                  }
-                 if(password[3] !=  clave[3]){
+                 if(password[DOWN_BTN] !=  clave[DOWN_BTN]){
                  display.clear();
                  display.drawString(10, 5, "!Error¡");
                  display.display();
@@ -270,7 +275,7 @@ void taskBomb() {
                  display.drawString(10, 5, String(counter));
                  display.display();
                  }
-                 if(password[4] !=  clave[4]){
+                 if(password[UP_BTN] !=  clave[UP_BTN]){
                  display.clear();
                  display.drawString(10, 5, "!Error¡");
                  display.display();
@@ -278,7 +283,7 @@ void taskBomb() {
                  display.drawString(10, 5, String(counter));
                  display.display();
                  }
-                 if(password[5] !=  clave[5]){
+                 if(password[DOWN_BTN] !=  clave[DOWN_BTN]){
                  display.clear();
                  display.drawString(10, 5, "!Error¡");
                  display.display();
@@ -286,7 +291,7 @@ void taskBomb() {
                  display.drawString(10, 5, String(counter));
                  display.display();
                  }
-                 if(password[6] !=  clave[6]){
+                 if(password[ARM_BTN] !=  clave[ARM_BTN]){
                  display.clear();
                  display.drawString(10, 5, "!Error¡");
                  display.display();
@@ -295,18 +300,17 @@ void taskBomb() {
                  display.display();
                  }
                  
-        if(counter > 0) {
-          counter--;
-        }
-
         if(counter = 0) {
           digitalWrite(BOMB_OUT,HIGH);
           display.clear();
           display.drawString(10, 5, "BOOOOM");
           display.display();
-          delay(2000);
-          bombState =  BombStates::WAITING_CONFIG;
+          if(counter = 0) {
+            counter = 20;
+            bombState =  BombStates::WAITING_CONFIG;
+          }
         }        
+     
           
         // Si ya pasó un 1 segundo --> decremento el counter
         // Cuando el contador llegue a cero --> BOOM!. Debo esperar un tiempo para que el usario pueda ver el mensaje
