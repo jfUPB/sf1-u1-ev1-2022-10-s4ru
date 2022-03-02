@@ -235,6 +235,7 @@ void taskBomb() {
                            display.clear();
                            display.drawString(10, 5, "Bomba Desarmada");
                            display.display();
+                           bombState =  BombStates::WAITING_CONFIG;
                            }
                          }
                        }
