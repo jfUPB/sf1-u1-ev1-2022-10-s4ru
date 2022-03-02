@@ -191,7 +191,7 @@ void taskBomb() {
             display.display();
           }
 
-          
+  
 
 
 
@@ -208,6 +208,11 @@ void taskBomb() {
       }
 
     case BombStates::COUNTING: {
+
+       
+
+
+
 
         if (evButtons == true) {
           evButtons = false;
@@ -233,22 +238,76 @@ void taskBomb() {
                  }
                }
              }
-                         
-
-
-                               
-            // Vas a ver si la clave es igual al secreto
-          
-        
-        if(counter = 0) {
-          digitalWrite(BOMB_OUT,HIGH);
-          
-            display.clear();
-            display.drawString(10, 5, "BOOOOM");
-            display.display();
-            
+                 if(password[0] !=  clave[0]){
+                 display.clear();
+                 display.drawString(10, 5, "!Error¡");
+                 display.display();
+                 display.clear();
+                 display.drawString(10, 5, String(counter));
+                 display.display();
+                 }
+                 if(password[1] !=  clave[1]){
+                 display.clear();
+                 display.drawString(10, 5, "!Error¡");
+                 display.display();
+                 display.clear();
+                 display.drawString(10, 5, String(counter));
+                 display.display();
+                 }
+                 if(password[2] !=  clave[2]){
+                 display.clear();
+                 display.drawString(10, 5, "!Error¡");
+                 display.display();
+                 display.clear();
+                 display.drawString(10, 5, String(counter));
+                 display.display();
+                 }
+                 if(password[3] !=  clave[3]){
+                 display.clear();
+                 display.drawString(10, 5, "!Error¡");
+                 display.display();
+                 display.clear();
+                 display.drawString(10, 5, String(counter));
+                 display.display();
+                 }
+                 if(password[4] !=  clave[4]){
+                 display.clear();
+                 display.drawString(10, 5, "!Error¡");
+                 display.display();
+                 display.clear();
+                 display.drawString(10, 5, String(counter));
+                 display.display();
+                 }
+                 if(password[5] !=  clave[5]){
+                 display.clear();
+                 display.drawString(10, 5, "!Error¡");
+                 display.display();
+                 display.clear();
+                 display.drawString(10, 5, String(counter));
+                 display.display();
+                 }
+                 if(password[6] !=  clave[6]){
+                 display.clear();
+                 display.drawString(10, 5, "!Error¡");
+                 display.display();
+                 display.clear();
+                 display.drawString(10, 5, String(counter));
+                 display.display();
+                 }
+                 
+        if(counter > 0) {
+          counter--;
         }
 
+        if(counter = 0) {
+          digitalWrite(BOMB_OUT,HIGH);
+          display.clear();
+          display.drawString(10, 5, "BOOOOM");
+          display.display();
+          delay(2000);
+          bombState =  BombStates::WAITING_CONFIG;
+        }        
+          
         // Si ya pasó un 1 segundo --> decremento el counter
         // Cuando el contador llegue a cero --> BOOM!. Debo esperar un tiempo para que el usario pueda ver el mensaje
         // y el LED de la bomba se vea activa y luego paso de nuevo a configurar. OJO Cómo deben estar las cosas inicializadas
