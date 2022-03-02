@@ -138,8 +138,8 @@ void taskBomb() {
   static uint8_t counter;
 
   static uint8_t clave[7];
-  static uint8_t claveContador;
-  static uint8_t password[] = {UP_BTN, UP_BTN, DOWN_BTN, DOWN_BTN, UP_BTN, DOWN_BTN, ARM_BTN};
+  static uint8_t claveContador =0;
+  static uint8_t password[7] = {UP_BTN, UP_BTN, DOWN_BTN, DOWN_BTN, UP_BTN, DOWN_BTN, ARM_BTN};
 
 
   switch (bombState) {
@@ -214,9 +214,10 @@ void taskBomb() {
           clave[claveContador] = evButtonsData;
           claveContador++;
           if (claveContador == 7) {
-            
-          }
-                                
+            if(password[0] ==  clave[0]){
+              
+            }
+        }                      
             // Vas a ver si la clave es igual al secreto
           
         
