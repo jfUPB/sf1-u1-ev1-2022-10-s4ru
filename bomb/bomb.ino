@@ -212,21 +212,7 @@ void taskBomb() {
       }
 
     case BombStates::COUNTING: {
-       unsigned long CounterAnterior;
-       unsigned long counter = millis();
-       int tiempo = -1;
        
-       CounterAnterior = millis();
-       
-       if(counter - CounterAnterior >= 1000) {
-        CounterAnterior = counter;
-        tiempo--;
-       }
-
-
-
-
-
         if (evButtons == true) {
           evButtons = false;
 
@@ -319,7 +305,6 @@ void taskBomb() {
           display.drawString(10, 5, "BOOOOM");
           display.display();
           if(counter = 0) {
-            counter = 20;
             bombState =  BombStates::WAITING_CONFIG;
           }
         }        
