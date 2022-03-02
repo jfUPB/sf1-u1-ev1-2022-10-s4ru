@@ -194,7 +194,7 @@ void taskBomb() {
           }
 
           if(evButtonsData == ARM_BTN) {
-            bombState = BombStates::COUNTING;           
+            bombState = BombStates::COUNTING;         
           }
 
 
@@ -212,8 +212,16 @@ void taskBomb() {
       }
 
     case BombStates::COUNTING: {
-
- 
+       unsigned long CounterAnterior;
+       unsigned long counter = millis();
+       int tiempo = -1;
+       
+       CounterAnterior = millis();
+       
+       if(counter - CounterAnterior >= 1000) {
+        CounterAnterior = counter;
+        tiempo--;
+       }
 
 
 
@@ -300,6 +308,10 @@ void taskBomb() {
                  display.drawString(10, 5, String(counter));
                  display.display();
                  }
+
+                 
+
+
                  
         if(counter = 0) {
           digitalWrite(BOMB_OUT,HIGH);
@@ -324,7 +336,7 @@ void taskBomb() {
 
         break;
       }
-    default:
+  
       break;
   }
 
