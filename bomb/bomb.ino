@@ -191,6 +191,7 @@ void taskBomb() {
             display.display();
           }
 
+          
 
 
 
@@ -215,9 +216,27 @@ void taskBomb() {
           claveContador++;
           if (claveContador == 7) {
             if(password[0] ==  clave[0]){
-              
-            }
-        }                      
+              if(password[1] ==  clave[1]){
+                if(password[2] ==  clave[2]){
+                  if(password[3] ==  clave[3]){
+                    if(password[4] ==  clave[4]){
+                      if(password[5] ==  clave[5]){
+                        if(password[6] ==  clave[6]){
+                           display.clear();
+                           display.drawString(10, 5, "Bomba Desarmada");
+                           display.display();
+                           }
+                         }
+                       }
+                     }
+                   }
+                 }
+               }
+             }
+                         
+
+
+                               
             // Vas a ver si la clave es igual al secreto
           
         
