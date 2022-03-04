@@ -284,4 +284,41 @@ void taskBomb() {
           }
 
         }
-    
+        else if (claveContador == ClaveLargo) {
+          Serial.println("La clave esta llena");
+          DesarmeTask(claveIntento, claveBuena, ClaveLargo, EstadoClave);
+          if (EstadoClave == true) {
+            Serial.println("Contraseña Correcta")
+            digitalWrite(LED_COUNT, HIGH);
+            digitalWrite(BOMB_OUT, LOW);
+            counter = 20;
+            display.clear();
+            display.drawString(10, 20, String(counter));
+            display.display();
+            claveContador = 0;
+            for (uint8_t r = 0; r < ClaveLargo; r++) {
+              claveIntento[r] = 0;
+            }
+            digitalWrite(LED_T, HIGH);
+            delay(300);
+            digitalWrite(LED_T, LOW);
+            bombState = BombStates::CONFIG;
+          }
+          else {
+            Serial.println("Contraseña Incorrecta");
+            claveContador = 0;
+            for (uint8_t i = 0; i < ClaveLargo; i++) {
+              claveIntento[i] = 0;
+            }
+            digitalWrite(LED_contraseña_mala, HIGH);
+            delay(300);
+            digitalWrite(LED_contraseña_mala, LOW);
+          }
+        }
+      }
+           break;
+    default: {
+      }
+      break;
+  }
+}
