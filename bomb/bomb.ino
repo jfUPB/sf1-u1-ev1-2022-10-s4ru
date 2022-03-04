@@ -2,6 +2,8 @@
 
 #define BOMB_OUT 25
 #define LED_COUNT 26
+#define LED_T 27
+#define LED_contraseña_mala 14
 #define UP_BTN 13
 #define DOWN_BTN 32
 #define ARM_BTN 33
@@ -71,7 +73,7 @@ void taskButtons() {
   static uint32_t referenceTime;
   const uint32_t STABLETIMEOUT = 100;
   static uint8_t lastButton = 0;
-  
+
   switch (buttonsState) {
     case ButtonsStates::INIT: {
         pinMode(UP_BTN, INPUT_PULLUP);
@@ -97,7 +99,7 @@ void taskButtons() {
           referenceTime = millis();
           buttonsState = ButtonsStates::WAITING_STABLE;
         }
-        
+
         break;
       }
 
@@ -107,6 +109,10 @@ void taskButtons() {
         }
         else if ( (millis() - referenceTime) >= STABLETIMEOUT) {
           buttonsState = ButtonsStates::WAITING_RELEASE;
+          display.clear();
+          display.drawString(10, 5, String(BombCounter));
+          display.display();
+
         }
 
         break;
@@ -135,23 +141,19 @@ void taskBomb() {
   enum class BombStates {INIT, WAITING_CONFIG, COUNTING};
   static BombStates bombState =  BombStates::INIT;
 
-  static uint8_t counter;
-
-  static uint8_t clave[7];
-  static uint8_t claveContador =0;
-  static uint8_t password[7] = {UP_BTN, UP_BTN, DOWN_BTN, DOWN_BTN, UP_BTN, DOWN_BTN, ARM_BTN};
-
+  static uint8_t Bombcounter = 20;
   uint32_t currentMillis = millis();
 
 
   switch (bombState) {
     case BombStates::INIT: {
 
-        pinMode(14, OUTPUT);
+        pinMode(LED_contraseña_mala 14, OUTPUT);
         pinMode(BOMB_OUT, OUTPUT);
         pinMode(LED_COUNT, OUTPUT);
-
-        digitalWrite(14, LOW);
+        pinMode(LED_T, OUTPUT);
+        
+        digitalWrite(LED_contraseña_mala, LOW);
         digitalWrite(LED_COUNT, HIGH);
         digitalWrite(BOMB_OUT, LOW);
 
@@ -159,12 +161,23 @@ void taskBomb() {
         display.setContrast(255);
         display.clear();
         display.setTextAlignment(TEXT_ALIGN_LEFT);
-        display.setFont(ArialMT_Plain_16);
+        display.setFont(ArialMT_Plain_12);
 
         counter = 20;
         display.clear();
         display.drawString(10, 5, String(counter));
         display.display();
+
+
+
+        display.clear();
+        display.drawString(10, 5, String(BombCounter));
+        display.display();
+        ledBombCountState = HIGH;
+        bombState = BombStates::WAITING_CONFIG;
+
+
+
         bombState = BombStates::WAITING_CONFIG;
         break;
       }
@@ -189,12 +202,16 @@ void taskBomb() {
             }
 
             display.clear();
-            display.drawString(10, 5, String(counter));
+            display.drawString(10, 5, String(BombCounter));
             display.display();
           }
 
-          if(evButtonsData == ARM_BTN) {
-            bombState = BombStates::COUNTING;         
+          if (evButtonsData == ARM_BTN) {
+            display.clear();
+            display.drawString(10, 5, "BOMBA ARMADA");
+            display.display();
+            claveContador = 0;
+            bombState = BombStates::COUNTING;
           }
 
 
@@ -212,118 +229,67 @@ void taskBomb() {
       }
 
     case BombStates::COUNTING: {
-       
+        const uint8_t ClaveLargo = 7;
+        static uint8_t claveIntento[ClaveBuena];
+        static uint8_t claveBuena[ClaveBuena] = {UP_BTN, UP_BTN, DOWN_BTN, DOWN_BTN, UP_BTN, DOWN_BTN, ARM_BTN}
+        static uint8_t claveContador = 0;
+        const uint32_t LEDBOMBINTERVAL = 500;
+        static uint8_t ledBombCountState = LOW;
+        bool EstadoClave = false;
+
+
+        if (currentMillis - previousMillis >= interval) {
+          previousMillis = currentMillis;
+          if (ledBombCountState == LOW) {
+            ledBombCountState = HIGH;
+          }
+          else {
+            ledBombCountState = LOW;
+            counter--;
+            display.clear();
+            display.drawString(10, 5, String(counter));
+            display.display();
+          }
+          digitalWrite(LED_COUNT, ledBombCountState);
+          if (counter == 0) {
+            igitalWrite(LED_COUNT, LOW);
+            digitalWrite(BOMB_OUT, HIGH);
+            display.clear();
+            display.drawString(10, 5, "BOOOOOOM");
+            display.display();
+            delay(3000);
+            digitalWrite(LED_COUNT, HIGH);
+            digitalWrite(BOMB_OUT, LOW);
+            counter = 20;
+            display.clear();
+            display.drawString(10, 5, String(counter));
+            display.display();
+            bombState = BombStates::CONFIG;
+          }
+        }
+
+
+
+
+
         if (evButtons == true) {
           evButtons = false;
-
-          clave[claveContador] = evButtonsData;
-          claveContador++;
-          if (claveContador == 7) {
-            if(password[UP_BTN] ==  clave[UP_BTN]){
-              if(password[UP_BTN] ==  clave[UP_BTN]){
-                if(password[DOWN_BTN] ==  clave[DOWN_BTN]){
-                  if(password[DOWN_BTN] ==  clave[DOWN_BTN]){
-                    if(password[UP_BTN] ==  clave[UP_BTN]){
-                      if(password[DOWN_BTN] ==  clave[DOWN_BTN]){
-                        if(password[ARM_BTN] ==  clave[ARM_BTN]){
-                           display.clear();
-                           display.drawString(10, 5, "Bomba Desarmada");
-                           display.display();
-                           bombState =  BombStates::WAITING_CONFIG;
-                           }
-                         }
-                       }
-                     }
-                   }
-                 }
-               }
-             }
-                 if(password[UP_BTN] !=  clave[UP_BTN]){
-                 display.clear();
-                 display.drawString(10, 5, "!Error¡");
-                 display.display();
-                 display.clear();
-                 display.drawString(10, 5, String(counter));
-                 display.display();
-                 }
-                 if(password[UP_BTN] !=  clave[UP_BTN]){
-                 display.clear();
-                 display.drawString(10, 5, "!Error¡");
-                 display.display();
-                 display.clear();
-                 display.drawString(10, 5, String(counter));
-                 display.display();
-                 }
-                 if(password[DOWN_BTN] !=  clave[DOWN_BTN]){
-                 display.clear();
-                 display.drawString(10, 5, "!Error¡");
-                 display.display();
-                 display.clear();
-                 display.drawString(10, 5, String(counter));
-                 display.display();
-                 }
-                 if(password[DOWN_BTN] !=  clave[DOWN_BTN]){
-                 display.clear();
-                 display.drawString(10, 5, "!Error¡");
-                 display.display();
-                 display.clear();
-                 display.drawString(10, 5, String(counter));
-                 display.display();
-                 }
-                 if(password[UP_BTN] !=  clave[UP_BTN]){
-                 display.clear();
-                 display.drawString(10, 5, "!Error¡");
-                 display.display();
-                 display.clear();
-                 display.drawString(10, 5, String(counter));
-                 display.display();
-                 }
-                 if(password[DOWN_BTN] !=  clave[DOWN_BTN]){
-                 display.clear();
-                 display.drawString(10, 5, "!Error¡");
-                 display.display();
-                 display.clear();
-                 display.drawString(10, 5, String(counter));
-                 display.display();
-                 }
-                 if(password[ARM_BTN] !=  clave[ARM_BTN]){
-                 display.clear();
-                 display.drawString(10, 5, "!Error¡");
-                 display.display();
-                 display.clear();
-                 display.drawString(10, 5, String(counter));
-                 display.display();
-                 }
-
-                 
-
-
-                 
-        if(counter = 0) {
-          digitalWrite(BOMB_OUT,HIGH);
-          display.clear();
-          display.drawString(10, 5, "BOOOOM");
-          display.display();
-          if(counter = 0) {
-            bombState =  BombStates::WAITING_CONFIG;
-          }
-        }        
      
-          
-        // Si ya pasó un 1 segundo --> decremento el counter
-        // Cuando el contador llegue a cero --> BOOM!. Debo esperar un tiempo para que el usario pueda ver el mensaje
-        // y el LED de la bomba se vea activa y luego paso de nuevo a configurar. OJO Cómo deben estar las cosas inicializadas
-        // antes de entrar al estado de configuración?
-        //
+         
+            // Si ya pasó un 1 segundo --> decremento el counter
+            // Cuando el contador llegue a cero --> BOOM!. Debo esperar un tiempo para que el usario pueda ver el mensaje
+            // y el LED de la bomba se vea activa y luego paso de nuevo a configurar. OJO Cómo deben estar las cosas inicializadas
+            // antes de entrar al estado de configuración?
+            //
 
-        // Si ya pasó 500 ms --> cambio el estado del LED de conteo
+            // Si ya pasó 500 ms --> cambio el estado del LED de conteo
 
 
-        break;
-      }
-  
+            break;
+        }
+
       break;
-  }
+    }
 
 }
 }
