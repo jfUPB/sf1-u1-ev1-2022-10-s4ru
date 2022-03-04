@@ -152,7 +152,7 @@ void taskBomb() {
         pinMode(BOMB_OUT, OUTPUT);
         pinMode(LED_COUNT, OUTPUT);
         pinMode(LED_T, OUTPUT);
-        
+
         digitalWrite(LED_contraseña_mala, LOW);
         digitalWrite(LED_COUNT, HIGH);
         digitalWrite(BOMB_OUT, LOW);
@@ -232,7 +232,7 @@ void taskBomb() {
         const uint8_t ClaveLargo = 7;
         static uint8_t claveIntento[ClaveBuena];
         static uint8_t claveBuena[ClaveBuena] = {UP_BTN, UP_BTN, DOWN_BTN, DOWN_BTN, UP_BTN, DOWN_BTN, ARM_BTN}
-        static uint8_t claveContador = 0;
+                                                static uint8_t claveContador = 0;
         const uint32_t LEDBOMBINTERVAL = 500;
         static uint8_t ledBombCountState = LOW;
         bool EstadoClave = false;
@@ -268,28 +268,20 @@ void taskBomb() {
           }
         }
 
-
-
-
-
         if (evButtons == true) {
           evButtons = false;
-     
-         
-            // Si ya pasó un 1 segundo --> decremento el counter
-            // Cuando el contador llegue a cero --> BOOM!. Debo esperar un tiempo para que el usario pueda ver el mensaje
-            // y el LED de la bomba se vea activa y luego paso de nuevo a configurar. OJO Cómo deben estar las cosas inicializadas
-            // antes de entrar al estado de configuración?
-            //
+          if (claveContador > ClaveLargo) {
+            if (evButtonsData == UP_BTN) {
+              claveIntento[ClaveBuena] = evButtonsData;
+            }
+            if (evButtonsData == DOWN_BTN) {
+              claveIntento[ClaveBuena] = evButtonsData;
+            }
+            if (evButtonsData == ARM_BTN) {
+              claveIntento[ClaveBuena] = evButtonsData;
+            }
+            claveContador++;
+          }
 
-            // Si ya pasó 500 ms --> cambio el estado del LED de conteo
-
-
-            break;
         }
-
-      break;
-    }
-
-}
-}
+    
