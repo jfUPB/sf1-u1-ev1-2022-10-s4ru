@@ -2,15 +2,15 @@
 
 #define BOMB_OUT 25
 #define LED_COUNT 26
-#define LED_T 27
-#define LED_contraseña_mala 14
+#define LED_1 27
+#define LED_WRONG_PASSWORD 14
 #define UP_BTN 13
 #define DOWN_BTN 32
 #define ARM_BTN 33
 
 // Selecciona uno según tu display.
-SSD1306Wire display(0x3c, SDA, SCL, GEOMETRY_128_32);
-//SSD1306Wire display(0x3c, SDA, SCL, GEOMETRY_64_48);
+//SSD1306Wire display(0x3c, SDA, SCL, GEOMETRY_128_32);
+SSD1306Wire display(0x3c, SDA, SCL, GEOMETRY_64_48);
 
 void taskButtons();
 void taskBomb();
@@ -109,10 +109,6 @@ void taskButtons() {
         }
         else if ( (millis() - referenceTime) >= STABLETIMEOUT) {
           buttonsState = ButtonsStates::WAITING_RELEASE;
-          display.clear();
-          display.drawString(10, 5, String(BombCounter));
-          display.display();
-
         }
 
         break;
@@ -130,9 +126,6 @@ void taskButtons() {
       }
     default:
       break;
-
-
-
   }
 
 }
@@ -140,20 +133,18 @@ void taskButtons() {
 void taskBomb() {
   enum class BombStates {INIT, WAITING_CONFIG, COUNTING};
   static BombStates bombState =  BombStates::INIT;
-
-  static uint8_t Bombcounter = 20;
-  uint32_t currentMillis = millis();
-
+  static uint8_t counter = 20;
 
   switch (bombState) {
+    
     case BombStates::INIT: {
 
-        pinMode(LED_contraseña_mala 14, OUTPUT);
+        pinMode(LED_WRONG_PASSWORD, OUTPUT);
         pinMode(BOMB_OUT, OUTPUT);
         pinMode(LED_COUNT, OUTPUT);
-        pinMode(LED_T, OUTPUT);
+        pinMode(LED_1, OUTPUT);
 
-        digitalWrite(LED_contraseña_mala, LOW);
+        digitalWrite(LED_WRONG_PASSWORD, LOW);
         digitalWrite(LED_COUNT, HIGH);
         digitalWrite(BOMB_OUT, LOW);
 
@@ -161,27 +152,21 @@ void taskBomb() {
         display.setContrast(255);
         display.clear();
         display.setTextAlignment(TEXT_ALIGN_LEFT);
-        display.setFont(ArialMT_Plain_12);
-
-        counter = 20;
+        display.setFont(ArialMT_Plain_16);
+       
         display.clear();
         display.drawString(10, 5, String(counter));
         display.display();
 
-
-
-        display.clear();
-        display.drawString(10, 5, String(BombCounter));
-        display.display();
-        ledBombCountState = HIGH;
         bombState = BombStates::WAITING_CONFIG;
 
-
-
-        bombState = BombStates::WAITING_CONFIG;
         break;
       }
     case BombStates::WAITING_CONFIG: {
+
+       display.clear();
+       display.drawString(10, 5, String(counter));
+       display.display();
 
         if (evButtons == true) {
           evButtons = false;
@@ -190,69 +175,49 @@ void taskBomb() {
             if (counter < 60) {
               counter++;
             }
-
-            display.clear();
-            display.drawString(10, 5, String(counter));
-            display.display();
           }
 
           if (evButtonsData == DOWN_BTN) {
             if (counter > 10) {
               counter--;
             }
-
-            display.clear();
-            display.drawString(10, 5, String(BombCounter));
-            display.display();
           }
 
           if (evButtonsData == ARM_BTN) {
-            display.clear();
-            display.drawString(10, 5, "BOMBA ARMADA");
-            display.display();
-            claveContador = 0;
             bombState = BombStates::COUNTING;
+            Serial.println("BombStates::COUNTING");
           }
-
-
-
-
-
-
-          // En la condición armado no olvidar preparar todas las variables para el siguiente estado.
-          // por ejemplo claveContador = 0;
-
-
         }
-
         break;
       }
-
     case BombStates::COUNTING: {
-        const uint8_t ClaveLargo = 7;
-        static uint8_t claveIntento[ClaveBuena];
-        static uint8_t claveBuena[ClaveBuena] = {UP_BTN, UP_BTN, DOWN_BTN, DOWN_BTN, UP_BTN, DOWN_BTN, ARM_BTN}
-                                                static uint8_t claveContador = 0;
-        const uint32_t LEDBOMBINTERVAL = 500;
-        static uint8_t ledBombCountState = LOW;
-        bool EstadoClave = false;
+        const uint8_t vecLenght = 7;
+        static uint8_t  vecTryPassword[vecLenght];
+        static uint8_t dataCounter = 0;
+        static uint8_t  vecTruePassword[vecLenght] = {UP_BTN, UP_BTN, DOWN_BTN, DOWN_BTN, UP_BTN, DOWN_BTN, ARM_BTN};
+        bool statePassword = false;
+      
+        const uint32_t interval = 500;
+        static uint32_t previousMillis = 0;
+        static uint8_t ledstate_BOMB_OUT = LOW;
+        uint32_t currentMillis = millis();
 
 
         if (currentMillis - previousMillis >= interval) {
           previousMillis = currentMillis;
-          if (ledBombCountState == LOW) {
-            ledBombCountState = HIGH;
+          if (ledstate_BOMB_OUT == LOW) {
+            ledstate_BOMB_OUT = HIGH;
           }
           else {
-            ledBombCountState = LOW;
+            ledstate_BOMB_OUT = LOW;
             counter--;
             display.clear();
             display.drawString(10, 5, String(counter));
             display.display();
           }
-          digitalWrite(LED_COUNT, ledBombCountState);
+          digitalWrite(LED_COUNT, ledstate_BOMB_OUT);
           if (counter == 0) {
-            igitalWrite(LED_COUNT, LOW);
+            digitalWrite(LED_COUNT, LOW);
             digitalWrite(BOMB_OUT, HIGH);
             display.clear();
             display.drawString(10, 5, "BOOOOOOM");
@@ -264,55 +229,55 @@ void taskBomb() {
             display.clear();
             display.drawString(10, 5, String(counter));
             display.display();
-            bombState = BombStates::CONFIG;
+            bombState = BombStates::WAITING_CONFIG;
           }
         }
 
         if (evButtons == true) {
           evButtons = false;
-          if (claveContador > ClaveLargo) {
+          if (dataCounter > vecLenght) {
             if (evButtonsData == UP_BTN) {
-              claveIntento[ClaveBuena] = evButtonsData;
+              vecTryPassword[dataCounter] = evButtonsData;
             }
             if (evButtonsData == DOWN_BTN) {
-              claveIntento[ClaveBuena] = evButtonsData;
+              vecTryPassword[dataCounter] = evButtonsData;
             }
             if (evButtonsData == ARM_BTN) {
-              claveIntento[ClaveBuena] = evButtonsData;
+              vecTryPassword[dataCounter] = evButtonsData;
             }
-            claveContador++;
+            dataCounter++;
           }
 
         }
-        else if (claveContador == ClaveLargo) {
+        else if (dataCounter == vecLenght) {
           Serial.println("La clave esta llena");
-          DesarmeTask(claveIntento, claveBuena, ClaveLargo, EstadoClave);
-          if (EstadoClave == true) {
-            Serial.println("Contraseña Correcta")
+          disarmTask(vecTryPassword, vecTruePassword, vecLenght, &statePassword);
+          if (statePassword == true) {
+            Serial.println("Contraseña Correcta");
             digitalWrite(LED_COUNT, HIGH);
             digitalWrite(BOMB_OUT, LOW);
             counter = 20;
             display.clear();
             display.drawString(10, 20, String(counter));
             display.display();
-            claveContador = 0;
-            for (uint8_t r = 0; r < ClaveLargo; r++) {
-              claveIntento[r] = 0;
+            dataCounter = 0;
+            for (uint8_t r = 0; r < vecLenght; r++) {
+              vecTryPassword[r] = 0;
             }
-            digitalWrite(LED_T, HIGH);
+            digitalWrite(LED_1, HIGH);
             delay(300);
-            digitalWrite(LED_T, LOW);
-            bombState = BombStates::CONFIG;
+            digitalWrite(LED_1, LOW);
+            bombState = BombStates::WAITING_CONFIG;
           }
           else {
             Serial.println("Contraseña Incorrecta");
-            claveContador = 0;
-            for (uint8_t i = 0; i < ClaveLargo; i++) {
-              claveIntento[i] = 0;
+            dataCounter = 0;
+            for (uint8_t i = 0; i < vecLenght; i++) {
+              vecTryPassword[i] = 0;
             }
-            digitalWrite(LED_contraseña_mala, HIGH);
+            digitalWrite(LED_WRONG_PASSWORD, HIGH);
             delay(300);
-            digitalWrite(LED_contraseña_mala, LOW);
+            digitalWrite(LED_WRONG_PASSWORD, LOW);
           }
         }
       }
@@ -320,5 +285,17 @@ void taskBomb() {
     default: {
       }
       break;
+  }
+}
+
+void disarmTask(uint8_t *vecTryData, uint8_t *vecTrueData, uint8_t vecLengthData, bool *res) {
+  for (uint8_t i = 0; i < vecLengthData; i++) {
+    if (vecTrueData[i] == vecTryData[i]) {
+      *res = true;
+    }
+    else {
+      *res = false;
+      break;
+    }
   }
 }
